@@ -29,9 +29,8 @@ def shape_file_parsed():
         user_query_which_outlook = input(
             "Input not accepted. Which type of outlook do you wish to view? (categorical,tornado,hail,wind): ").lower().strip()
 
-    zip_file_name = "spcdata.zip"
-    my_file_handling.download_zip_file(zip_file_name)
-    name_of_file = my_file_handling.zip_file_iteration(zip_file_name, user_query_which_outlook)
+    my_file_handling.download_zip_file("spcdata.zip")
+    name_of_file = my_file_handling.zip_file_iteration("spcdata.zip", user_query_which_outlook)
 
     shape_file = gpd.read_file(name_of_file)
     shape_dict = shape_file.to_geo_dict()
