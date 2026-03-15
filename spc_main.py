@@ -3,6 +3,7 @@ from shapely.geometry import Point
 import geopandas as gpd
 import os
 import my_file_handling
+from local_forecast import LocalForecast
 
 def city_to_coordinates(city):
     # STEP 1: a city is converted to coordinates in this function
@@ -52,7 +53,9 @@ def shape_file_parsed():
         risk_name = gdf.loc[
             num_caught, "LABEL2"]  # based on the Integer label that evaluated "True" for .contains(), its corresponding String risk label is accessed thus
         print(
-            f"User selected {user_query_which_outlook} outlook. There is {risk_name} in {city["city-name"]}.")
+            f"User selected {user_query_which_outlook} outlook. {risk_name} exists in {city["city-name"]}.")
+    
+    return LocalForecast(user_query_which_outlook, risk_name, city)
 
 def main():
     shape_file_parsed()
