@@ -53,17 +53,17 @@ def shape_file_parsed():
         risk_name = gdf.loc[
             num_caught, "LABEL2"]  # based on the Integer label that evaluated "True" for .contains(), its corresponding String risk label is accessed thus
         print(
-            f"User selected {user_query_which_outlook} outlook. {risk_name} exists in {city["city-name"]}.")
+            f"User selected {user_query_which_outlook} outlook. {risk_name} exists in {city['city-name']}.")
     
-    return LocalForecast(user_query_which_outlook, risk_name, city)
+    return LocalForecast(user_query_which_outlook, risk_name, city["city-name"])
 
 def main():
     shape_file_parsed()
-    protected_files = ["spc_main.py", "my_file_handling.py", "README.md", ".gitignore", "requirements.txt"]
+    disposable_extensions = (".shp", ".shx", ".dbf", ".prj", ".zip")
 
-    for i in os.listdir():
-        if i not in protected_files and not os.path.isdir(i):
-            os.remove(i)
+    for file in os.listdir():
+        if file.endswith(disposable_extensions):
+            os.remove(file)
 
 if __name__ == "__main__":
     main()
