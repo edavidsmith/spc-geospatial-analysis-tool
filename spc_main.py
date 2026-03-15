@@ -52,7 +52,7 @@ def shape_file_parsed():
         risk_name = gdf.loc[
             num_caught, "LABEL2"]  # based on the Integer label that evaluated "True" for .contains(), its corresponding String risk label is accessed thus
         print(
-            f"For today's {user_query_which_outlook} convective outlook in {city["city-name"]}, there is a {risk_name} in place")
+            f"User selected {user_query_which_outlook} outlook. There is {risk_name} in {city["city-name"]}.")
 
 def main():
     shape_file_parsed()

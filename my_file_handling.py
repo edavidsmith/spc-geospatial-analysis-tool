@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 import requests
 from zipfile import ZipFile
 from bs4 import BeautifulSoup
@@ -6,31 +5,10 @@ import re
 
 def download_zip_file():
     # STEP 2: a zip file for download is located, utilizing knowledge of the SPC's predictable URL naming conventions
-    # day1_zulu = (100, 600, 1300, 1630, 2000)
-    # time = datetime.now(timezone.utc)
-    # time_replace = time.isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    # formatted_zulu_time = time_replace[11:16].replace(":", '')  # the time in zulu
-    # today_date = datetime.today().strftime('%Y-%m-%d').replace("-", "")  # today's date as YYYYMMDD
-
-    # # grabs what the most current outlook time SHOULD be
-    # for i in day1_zulu:
-    #     if int(formatted_zulu_time) >= i:
-    #         current_day1_outlook_time = i
-
-    # full_url = f"https://www.spc.noaa.gov/products/outlook/archive/{today_date[:4]}/day1otlk_{today_date}_{current_day1_outlook_time:04d}-shp.zip"
-    # source_zip_file = requests.get(full_url)
-
-    # # if current_day1_outlook_time is not up to date yet, uses previous zulu time
-    # if source_zip_file.status_code != 200:
-    #     fixed_outlook_index = day1_zulu.index(current_day1_outlook_time) - 1
-    #     full_url = f"https://www.spc.noaa.gov/products/outlook/archive/{today_date[:4]}/day1otlk_{today_date}_{day1_zulu[fixed_outlook_index]:04d}-shp.zip"
-    #     source_zip_file = requests.get(full_url)
-
-    # with open("spcdata.zip", mode="wb") as file:
-    #     file.write(source_zip_file.content)
     first_half_url = "https://www.spc.noaa.gov/products/outlook/"
     day1_url = requests.get(first_half_url + "day1otlk.html") 
-    day1_url_parsing = BeautifulSoup(day1_url.content, "html.parser") 
+    day1_url_parsing = BeautifulSoup(day1_url.content, "html.parser")
+
     #html is parsed on the forecast page for the name of .shp file archive
     for tags in day1_url_parsing.find_all("a"):
         string_of_tags = str(tags)
@@ -40,7 +18,6 @@ def download_zip_file():
             second_half_url = (string_of_tags[url_start:url_end])
     
     shp_file_location = requests.get(first_half_url + second_half_url) #the entire URL of the .shp file archive is obtained and downloaded
-    print(first_half_url + second_half_url)
     with open("spcdata.zip", mode="wb") as file:
         file.write(shp_file_location.content)
 
