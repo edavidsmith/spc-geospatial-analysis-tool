@@ -56,7 +56,7 @@ def shape_file_parsed():
 
 def main():
     shape_file_parsed()
-    protected_files = ["spc_main.py", "my_file_handling.py", "README.md", ".gitignore"]
+    protected_files = ["spc_main.py", "my_file_handling.py", "README.md", ".gitignore", "requirements.txt"]
 
     for i in os.listdir():
         if i not in protected_files and not os.path.isdir(i):
