@@ -86,17 +86,14 @@ def shape_file_parsed():
     gdf = gpd.GeoDataFrame.from_features(shape_dict["features"])  # the features (ie coordinates) from the extacted shp file are accessed
 
     coord_to_use = gpd.GeoSeries([Point(city["longitude"], city["latitude"])], crs="EPSG:3857")
-    # gdf.set_crs("EPSG:3857", inplace=True)
 
-    print(f"Blah debug: {gdf}")
-
+    #occasionally, risk types will contain a special conditional risk on top of the general forecast. A list exists to hold multiple risk types if there are more than one
     risk_exists = False
     all_risks = []
     for num, i in enumerate(gdf.contains(coord_to_use[0])):
         if i == True:
             num_caught = num
             all_risks.append(num_caught)
-            print(f"The number caught was {num_caught}")
             risk_exists = True
 
     risk_name = []
@@ -105,8 +102,13 @@ def shape_file_parsed():
     else:
         for risk_id in all_risks:
             risk_name.append(gdf.loc[risk_id, "LABEL2"])
-        # risk_name = gdf.loc[num_caught, "LABEL2"]  # based on the Integer label that evaluated "True" for .contains(), its corresponding String risk label is accessed
-        print(f"User selected day {which_day} {user_query_which_outlook} outlook. {risk_name} exists in {str.capitalize(city['city-name'])}.")
+    
+    if len(risk_name) > 0:
+        risk_types = " and ".join(risk_name)
+    else:
+        risk_types = "No risk"
+
+    print(f"User selected day {which_day} {user_query_which_outlook} outlook. {risk_types} exists in {str.capitalize(city['city-name'])}.")
     
     return LocalForecast(user_query_which_outlook, risk_name, city["city-name"])
 
