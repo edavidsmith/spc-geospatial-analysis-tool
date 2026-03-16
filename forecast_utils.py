@@ -19,10 +19,10 @@ def city_to_coordinates(city):
 
     return {"latitude": lat, "longitude": lon, "city-name": city}
 
-def download_zip_file():
+def download_zip_file(which_day):
     # STEP 2: a zip file for download is located, utilizing knowledge of the SPC's predictable URL naming conventions
     first_half_url = "https://www.spc.noaa.gov/products/outlook/"
-    day1_url = requests.get(first_half_url + "day1otlk.html") 
+    day1_url = requests.get(first_half_url + "day" + which_day + "otlk.html") 
     day1_url_parsing = BeautifulSoup(day1_url.content, "html.parser")
 
     #html is parsed on the forecast page for the name of .shp file archive
@@ -76,7 +76,8 @@ def shape_file_parsed():
         user_query_which_outlook = input(
             "Input not accepted. Which type of outlook do you wish to view? (categorical,tornado,hail,wind): ").lower().strip()
 
-    download_zip_file()
+    which_day = input("Choose which day's outlook (1, 2, 3): ")
+    download_zip_file(which_day)
     name_of_file = zip_file_iteration(user_query_which_outlook)
 
     shape_file = gpd.read_file(name_of_file)
@@ -99,7 +100,7 @@ def shape_file_parsed():
         risk_name = gdf.loc[
             num_caught, "LABEL2"]  # based on the Integer label that evaluated "True" for .contains(), its corresponding String risk label is accessed thus
         print(
-            f"User selected {user_query_which_outlook} outlook. {risk_name} exists in {city['city-name']}.")
+            f"User selected day {which_day} {user_query_which_outlook} outlook. {risk_name} exists in {str.capitalize(city['city-name'])}.")
     
     return LocalForecast(user_query_which_outlook, risk_name, city["city-name"])
 
