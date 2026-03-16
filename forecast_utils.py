@@ -5,6 +5,7 @@ import re
 from shapely.geometry import Point
 import geopandas as gpd
 from local_forecast import LocalForecast
+import os
 
 def city_to_coordinates(city):
     # STEP 1: a city is converted to coordinates in this function
@@ -42,7 +43,7 @@ def zip_file_iteration(user_specified_outlook):
     # STEP 3: iterate over contents of downloaded .zip file, making sure to only extract what is necessary based on user's specification
     with ZipFile("spcdata.zip", 'r') as myzip:
         file_list = myzip.namelist()
-
+        
         # only necessary files are extracted based on desired outlook
         for i in file_list:
             if user_specified_outlook == "categorical" and "cat" in i:
@@ -82,27 +83,37 @@ def shape_file_parsed():
 
     shape_file = gpd.read_file(name_of_file)
     shape_dict = shape_file.to_geo_dict()
-    gdf = gpd.GeoDataFrame.from_features(
-        shape_dict["features"])  # the features (ie coordinates) from the extacted shp file are accessed
+    gdf = gpd.GeoDataFrame.from_features(shape_dict["features"])  # the features (ie coordinates) from the extacted shp file are accessed
 
     coord_to_use = gpd.GeoSeries([Point(city["longitude"], city["latitude"])], crs="EPSG:3857")
-    gdf.set_crs("EPSG:3857", inplace=True)
+    # gdf.set_crs("EPSG:3857", inplace=True)
+
+    print(f"Blah debug: {gdf}")
 
     risk_exists = False
+    all_risks = []
     for num, i in enumerate(gdf.contains(coord_to_use[0])):
         if i == True:
             num_caught = num
+            all_risks.append(num_caught)
+            print(f"The number caught was {num_caught}")
             risk_exists = True
 
+    risk_name = []
     if not risk_exists:
         print("No storm risks today")
     else:
-        risk_name = gdf.loc[
-            num_caught, "LABEL2"]  # based on the Integer label that evaluated "True" for .contains(), its corresponding String risk label is accessed thus
-        print(
-            f"User selected day {which_day} {user_query_which_outlook} outlook. {risk_name} exists in {str.capitalize(city['city-name'])}.")
+        for risk_id in all_risks:
+            risk_name.append(gdf.loc[risk_id, "LABEL2"])
+        # risk_name = gdf.loc[num_caught, "LABEL2"]  # based on the Integer label that evaluated "True" for .contains(), its corresponding String risk label is accessed
+        print(f"User selected day {which_day} {user_query_which_outlook} outlook. {risk_name} exists in {str.capitalize(city['city-name'])}.")
     
     return LocalForecast(user_query_which_outlook, risk_name, city["city-name"])
 
 if __name__ == "__main__":
-    download_zip_file()
+    shape_file_parsed()
+    
+    disposable_extensions = (".shp", ".shx", ".dbf", ".prj", ".zip")
+    for file in os.listdir():
+        if file.endswith(disposable_extensions):
+            os.remove(file)
