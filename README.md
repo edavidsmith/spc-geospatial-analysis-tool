@@ -1,4 +1,4 @@
-# Storm Prediction Center Convective Outlook Checker 
+# Storm Prediction Center Geospatial Analysis Tool
 
 ## Description
 This program allows a user to specify a city and a type of convective risk, then tells them the outlook for that city based on data from NOAA
