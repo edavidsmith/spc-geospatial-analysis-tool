@@ -65,7 +65,7 @@ def zip_file_iteration(user_specified_outlook):
 
         return name_of_desired
     
-def shape_file_parsed():
+def shape_file_parsing():
     # STEP 4: the .shp file extracted from earlier is parsed and used to tell the user what risk area their specified city is in
     city = city_to_coordinates(input("Enter a city: "))
     user_query_which_outlook = input(
@@ -113,7 +113,7 @@ def shape_file_parsed():
     return LocalForecast(user_query_which_outlook, risk_name, city["city-name"])
 
 if __name__ == "__main__":
-    shape_file_parsed()
+    shape_file_parsing()
     
     disposable_extensions = (".shp", ".shx", ".dbf", ".prj", ".zip")
     for file in os.listdir():
