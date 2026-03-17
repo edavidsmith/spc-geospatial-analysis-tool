@@ -5,6 +5,7 @@ import re
 from shapely.geometry import Point
 import geopandas as gpd
 from local_forecast import LocalForecast
+import os
 
 def city_to_coordinates(city):
     # STEP 1: a city is converted to coordinates in this function
@@ -19,10 +20,10 @@ def city_to_coordinates(city):
 
     return {"latitude": lat, "longitude": lon, "city-name": city}
 
-def download_zip_file():
+def download_zip_file(which_day):
     # STEP 2: a zip file for download is located, utilizing knowledge of the SPC's predictable URL naming conventions
     first_half_url = "https://www.spc.noaa.gov/products/outlook/"
-    day1_url = requests.get(first_half_url + "day1otlk.html") 
+    day1_url = requests.get(first_half_url + "day" + which_day + "otlk.html") 
     day1_url_parsing = BeautifulSoup(day1_url.content, "html.parser")
 
     #html is parsed on the forecast page for the name of .shp file archive
@@ -42,7 +43,7 @@ def zip_file_iteration(user_specified_outlook):
     # STEP 3: iterate over contents of downloaded .zip file, making sure to only extract what is necessary based on user's specification
     with ZipFile("spcdata.zip", 'r') as myzip:
         file_list = myzip.namelist()
-
+        
         # only necessary files are extracted based on desired outlook
         for i in file_list:
             if user_specified_outlook == "categorical" and "cat" in i:
@@ -64,7 +65,7 @@ def zip_file_iteration(user_specified_outlook):
 
         return name_of_desired
     
-def shape_file_parsed():
+def shape_file_parsing():
     # STEP 4: the .shp file extracted from earlier is parsed and used to tell the user what risk area their specified city is in
     city = city_to_coordinates(input("Enter a city: "))
     user_query_which_outlook = input(
@@ -76,32 +77,45 @@ def shape_file_parsed():
         user_query_which_outlook = input(
             "Input not accepted. Which type of outlook do you wish to view? (categorical,tornado,hail,wind): ").lower().strip()
 
-    download_zip_file()
+    which_day = input("Choose which day's outlook (1, 2, 3): ")
+    download_zip_file(which_day)
     name_of_file = zip_file_iteration(user_query_which_outlook)
 
     shape_file = gpd.read_file(name_of_file)
     shape_dict = shape_file.to_geo_dict()
-    gdf = gpd.GeoDataFrame.from_features(
-        shape_dict["features"])  # the features (ie coordinates) from the extacted shp file are accessed
+    gdf = gpd.GeoDataFrame.from_features(shape_dict["features"])  # the features (ie coordinates) from the extacted shp file are accessed
 
     coord_to_use = gpd.GeoSeries([Point(city["longitude"], city["latitude"])], crs="EPSG:3857")
-    gdf.set_crs("EPSG:3857", inplace=True)
 
+    #occasionally, risk types will contain a special conditional risk on top of the general forecast. A list exists to hold multiple risk types if there are more than one
     risk_exists = False
+    all_risks = []
     for num, i in enumerate(gdf.contains(coord_to_use[0])):
         if i == True:
             num_caught = num
+            all_risks.append(num_caught)
             risk_exists = True
 
+    risk_name = []
     if not risk_exists:
         print("No storm risks today")
     else:
-        risk_name = gdf.loc[
-            num_caught, "LABEL2"]  # based on the Integer label that evaluated "True" for .contains(), its corresponding String risk label is accessed thus
-        print(
-            f"User selected {user_query_which_outlook} outlook. {risk_name} exists in {city['city-name']}.")
+        for risk_id in all_risks:
+            risk_name.append(gdf.loc[risk_id, "LABEL2"])
+    
+    if len(risk_name) > 0:
+        risk_types = " and ".join(risk_name)
+    else:
+        risk_types = "No risk"
+
+    print(f"User selected day {which_day} {user_query_which_outlook} outlook. {risk_types} exists in {str.capitalize(city['city-name'])}.")
     
     return LocalForecast(user_query_which_outlook, risk_name, city["city-name"])
 
 if __name__ == "__main__":
-    download_zip_file()
+    shape_file_parsing()
+    
+    disposable_extensions = (".shp", ".shx", ".dbf", ".prj", ".zip")
+    for file in os.listdir():
+        if file.endswith(disposable_extensions):
+            os.remove(file)
