@@ -68,18 +68,18 @@ def zip_file_iteration(user_specified_outlook):
 def shape_file_parsing():
     # STEP 4: the .shp file extracted from earlier is parsed and used to tell the user what risk area their specified city is in
     city = city_to_coordinates(input("Enter a city: "))
-    user_query_which_outlook = input(
+    outlook_type = input(
         "Which type of outlook do you wish to view? (categorical,tornado,hail,wind): ").lower().strip()
 
     # loop handles bad input
     accepted_input = ("categorical", "tornado", "hail", "wind")
-    while user_query_which_outlook not in accepted_input:
-        user_query_which_outlook = input(
+    while outlook_type not in accepted_input:
+        outlook_type = input(
             "Input not accepted. Which type of outlook do you wish to view? (categorical,tornado,hail,wind): ").lower().strip()
 
     which_day = input("Choose which day's outlook (1, 2, 3): ")
     download_zip_file(which_day)
-    name_of_file = zip_file_iteration(user_query_which_outlook)
+    name_of_file = zip_file_iteration(outlook_type)
 
     shape_file = gpd.read_file(name_of_file)
     shape_dict = shape_file.to_geo_dict()
@@ -96,26 +96,26 @@ def shape_file_parsing():
             all_risks.append(num_caught)
             risk_exists = True
 
-    risk_name = []
+    risk_type = []
     if not risk_exists:
         print("No storm risks today")
     else:
         for risk_id in all_risks:
-            risk_name.append(gdf.loc[risk_id, "LABEL2"])
+            risk_type.append(gdf.loc[risk_id, "LABEL2"])
     
-    if len(risk_name) > 0:
-        risk_types = " and ".join(risk_name)
+    if len(risk_type) > 0:
+        risk_types = " and ".join(risk_type)
     else:
         risk_types = "No risk"
 
-    print(f"User selected day {which_day} {user_query_which_outlook} outlook. {risk_types} exists in {str.capitalize(city['city-name'])}.")
+    print(f"User selected day {which_day} {outlook_type} outlook. {risk_types} exists in {str.capitalize(city['city-name'])}.")
     
-    return LocalForecast(user_query_which_outlook, risk_name, city["city-name"])
+    return LocalForecast(outlook_type, risk_type, city["city-name"])
 
-if __name__ == "__main__":
-    shape_file_parsing()
+# if __name__ == "__main__":
+#     shape_file_parsing()
     
-    disposable_extensions = (".shp", ".shx", ".dbf", ".prj", ".zip")
-    for file in os.listdir():
-        if file.endswith(disposable_extensions):
-            os.remove(file)
+#     disposable_extensions = (".shp", ".shx", ".dbf", ".prj", ".zip")
+#     for file in os.listdir():
+#         if file.endswith(disposable_extensions):
+#             os.remove(file)
