@@ -77,14 +77,22 @@ def shape_file_parsing():
         outlook_type = input(
             "Input not accepted. Which type of outlook do you wish to view? (categorical,tornado,hail,wind): ").lower().strip()
 
-    which_day = input("Choose which day's outlook (1, 2, 3): ")
+    if outlook_type != "categorical":
+        which_day = input("Choose which day's outlook (1, 2): ")
+    else:
+        which_day = input("Choose which day's outlook (1, 2, 3): ")
     download_zip_file(which_day)
     name_of_file = zip_file_iteration(outlook_type)
 
-    shape_file = gpd.read_file(name_of_file)
+    try:
+        shape_file = gpd.read_file(name_of_file).to_crs(crs=4326, epsg=4326)
+    except ValueError:
+        print(r"Less than 2% risk for all areas.")
+        return
+    
     shape_dict = shape_file.to_geo_dict()
     gdf = gpd.GeoDataFrame.from_features(shape_dict["features"])  # the features (ie coordinates) from the extacted shp file are accessed
-
+    
     coord_to_use = gpd.GeoSeries([Point(city["longitude"], city["latitude"])], crs="EPSG:3857")
 
     #occasionally, risk types will contain a special conditional risk on top of the general forecast. A list exists to hold multiple risk types if there are more than one
@@ -112,10 +120,10 @@ def shape_file_parsing():
     
     return LocalForecast(outlook_type, risk_type, city["city-name"])
 
-# if __name__ == "__main__":
-#     shape_file_parsing()
+if __name__ == "__main__":
+    shape_file_parsing()
     
-#     disposable_extensions = (".shp", ".shx", ".dbf", ".prj", ".zip")
-#     for file in os.listdir():
-#         if file.endswith(disposable_extensions):
-#             os.remove(file)
+    disposable_extensions = (".shp", ".shx", ".dbf", ".prj", ".zip")
+    for file in os.listdir():
+        if file.endswith(disposable_extensions):
+            os.remove(file)
