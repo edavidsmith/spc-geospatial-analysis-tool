@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import re
 from shapely.geometry import Point
 import geopandas as gpd
-from local_forecast import LocalForecast
+from .local_forecast import LocalForecast
 import os
 
 def city_to_coordinates(city):
@@ -96,20 +96,15 @@ def shape_file_parsing():
     coord_to_use = gpd.GeoSeries([Point(city["longitude"], city["latitude"])], crs="EPSG:3857")
 
     #occasionally, risk types will contain a special conditional risk on top of the general forecast. A list exists to hold multiple risk types if there are more than one
-    risk_exists = False
     all_risks = []
     for num, i in enumerate(gdf.contains(coord_to_use[0])):
         if i == True:
             num_caught = num
             all_risks.append(num_caught)
-            risk_exists = True
 
-    risk_type = []
-    if not risk_exists:
-        print("No storm risks today")
-    else:
-        for risk_id in all_risks:
-            risk_type.append(gdf.loc[risk_id, "LABEL2"])
+    risk_type = []   
+    for risk_id in all_risks:
+        risk_type.append(gdf.loc[risk_id, "LABEL2"])
     
     if len(risk_type) > 0:
         risk_types = " and ".join(risk_type)

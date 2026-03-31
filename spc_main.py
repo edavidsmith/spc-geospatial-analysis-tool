@@ -1,5 +1,5 @@
 import os
-from forecast_utils import *
+from modules.forecast_utils import shape_file_parsing
 
 def main():
     disposable_extensions = (".shp", ".shx", ".dbf", ".prj", ".zip")

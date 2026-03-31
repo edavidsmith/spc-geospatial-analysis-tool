@@ -29,7 +29,10 @@ def download_archived_forecast(date):
     needed_dir = f"forecasts\\{date[:4]}\\{date[5:7]}\\{date[8:]}"
     target_dir = Path(needed_dir)
 
-    if test_url(f"https://www.spc.noaa.gov/exper/archive/event.php?date={date_reformat}") != True:
+    # print(test_url(f"https://www.spc.noaa.gov/exper/archive/event.php?date={date_reformat}"))
+    # print(test_url(archive_url))
+
+    if test_url(archive_url) != True:
         sys.exit("Error retrieving URL. Webpage may not exist.")
 
     if not target_dir.is_dir():
@@ -78,7 +81,8 @@ def plot_tor_tracks(folium_object, tracks):
         ).add_to(folium_object)
 
 def plot_risk_polygon(folium_object, coord_list, risk_percent):
-    color_dict = {"2% Tornado Risk": "green", 
+    color_dict = {"General Thunderstorm Risk" : "light green",
+                  "2% Tornado Risk": "green", 
                   "5% Tornado Risk": "brown", 
                   "10% Tornado Risk": "yellow", 
                   "15% Tornado Risk": "red", 
@@ -95,7 +99,9 @@ def plot_risk_polygon(folium_object, coord_list, risk_percent):
     for key in color_dict.keys():
         if str(risk_percent) == key[:key.find("%")]:
                 risk_label = key
-    
+    if risk_percent == "0":
+        risk_label = "General Thunderstorm Risk"
+
     folium.Polygon(
         locations=coord_list,
         color="black",
@@ -171,10 +177,17 @@ def create_comparison_map(date): #is not currently handling hatched areas, nor m
 if __name__ == "__main__":
     #2011-04-27 is a good test date
     while True:
-        date = input("Enter date in format YYYY-MM-DD: ")
+        date = input("Enter date using format YYYY-MM-DD. Use a date between 2009-01-06 and 2024-09-09 (data does not exist outside of this window): ")
         try:
             #checks if date is formatted correctly by attempting conversion to date object
+            min_date = datetime.datetime.strptime("2009-01-06", "%Y-%m-%d").date()
+            max_date = datetime.datetime.strptime("2024-09-09", "%Y-%m-%d").date()
             parsed_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+
+            if not min_date <= parsed_date <= max_date:
+                print("Retry using a date between the specified window.")
+                continue
+
             break 
         except ValueError:
             print("Date formatting incorrect. Try again.")
