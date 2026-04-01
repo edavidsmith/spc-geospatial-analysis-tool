@@ -23,6 +23,7 @@ Below is an example of this tool using data from the tornado outbreak on April 4
 
 <img width="1044" height="796" alt="Screenshot 2026-03-29 175715" src="https://github.com/user-attachments/assets/a8bcf7ce-8576-4b0a-a8dc-58792a808ee2" />
 
+
 - Downloads archived forecast from a user-specified date
 - Extracts .shp files from .zip, parses to obtain polygons
 - Draws polygons on folium map layer by layer, labelling each polygon with the correct risk area and color scheme
